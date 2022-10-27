@@ -4,8 +4,11 @@ import  requests
 import conf
 bot = discord.Client()
 bot = commands.Bot(command_prefix=".")
-host=conf.host
-@tasks.loop(minutes = 1)
+host=conf.HOST
+async def on_ready():
+    print("Bot ready")
+
+@tasks.loop(minutes = 100)
 async def notify():
     url = host+'/apiDiscordNotifications'
     try:
@@ -19,7 +22,12 @@ async def notify():
 @bot.command()
 async def connectETD(ctx, *args):
     await ctx.send(f"Your ID: `{ctx.author.id}`")
-    
+
+@bot.command()
+async def ping(ctx):
+    await ctx.send(f'My ping is** {round(bot.latency*1000)} Ms**')
+
+
 async def sendNotification(id,id_user,reader,content,author):
     if(id_user):
         user = await bot.fetch_user(id_user)
