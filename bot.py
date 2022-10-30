@@ -5,19 +5,19 @@ import conf
 bot = discord.Client()
 bot = commands.Bot(command_prefix=".")
 host=conf.HOST
+
 async def on_ready():
     print("Bot ready")
 
-@tasks.loop(minutes = 100)
+@tasks.loop(minutes = 1)
 async def notify():
-    url = host+'/apiDiscordNotifications'
+    url = host+'/apiDiscordNotifications/key='+conf.SECURITY_KEY
     try:
-        r = requests.get(url = url,verify=False)
-        data = r.json()
+        data = sendRequest(url)
         for i in data:
             await sendNotification(i,data[i]["discordId"],data[i]["reader"],data[i]["link"],data[i]["author"])
-    except:
-        print("check host")
+    except Exception as e:
+        print(e)
 
 @bot.command()
 async def connectETD(ctx, *args):
@@ -36,9 +36,15 @@ async def sendNotification(id,id_user,reader,content,author):
         burnNotification(id)
 
 def burnNotification(id):
-    url = host+'/apiDiscordBurnNotification'
+    url = host+'/apiDiscordBurnNotification/key='+conf.SECURITY_KEY
     target={"id":id}
-    r = requests.get(url = url,params=target,verify=False)
+    sendRequest(url,target)
+
+
+def sendRequest(url,request=None):
+    r = requests.get(url = url,params=request,verify=False)
     response = r.json()
+    return response
+
 notify.start()
 bot.run(conf.BOT_KEY)
