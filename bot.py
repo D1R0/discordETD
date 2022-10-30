@@ -42,7 +42,7 @@ def burnNotification(id):
 
 
 def sendRequest(url,request=None):
-    r = requests.get(url = url,params=request,verify=False)
+    r = requests.get(url = url, params=request, verify=False)
     response = r.json()
     return response
 
