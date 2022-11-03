@@ -48,10 +48,13 @@ async def ping(ctx):
 
 async def sendNotification(id,id_user,reader,content,author):
     if(id_user):
-        user = await bot.fetch_user(id_user)
-        message="A new notification for "+reader+" on this link: "+content+"\nby "+author
-        await user.send(message)
-        burnNotification(id)
+        try:
+            user = await bot.fetch_user(id_user)
+            message="A new notification for "+reader+" on this link: "+content+"\nby "+author
+            await user.send(message)
+            burnNotification(id)
+        except:
+            print("id don't work")
 
 async def sendReminder(data):
     for i in data:
