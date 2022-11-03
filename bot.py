@@ -9,16 +9,34 @@ host=conf.HOST
 async def on_ready():
     print("Bot ready")
 
-@tasks.loop(minutes = 1)
-async def notify():
-    url = host+'/apiDiscordNotifications/key='+conf.SECURITY_KEY
-    try:
-        data = sendRequest(url)
-        for i in data:
-            await sendNotification(i,data[i]["discordId"],data[i]["reader"],data[i]["link"],data[i]["author"])
-    except Exception as e:
-        print(e)
-
+if host:
+    @tasks.loop(minutes = 1)
+    async def notify():
+        url = host+'/apiDiscordNotifications/key='+conf.SECURITY_KEY
+        try:
+            data = sendRequest(url)
+            for i in data:
+                await sendNotification(i,data[i]["discordId"],data[i]["reader"],data[i]["link"],data[i]["author"])
+        except Exception as e:
+            print(e)
+    @tasks.loop(hours = 24)
+    async def reminder():
+        url = host+'/apiTasks/key='+conf.SECURITY_KEY
+        users={}
+        try:
+            data = sendRequest(url)
+            print(data)
+            for i in data:
+                if data[i]["discordId"] in users:
+                    users[data[i]["discordId"]]+=[{"title":data[i]["title"],"link":data[i]["link"]}]
+                else:
+                    users[data[i]["discordId"]]=[{"title":data[i]["title"],"link":data[i]["link"]}]
+            await sendReminder(users)
+        except Exception as e:
+            print(e)
+    reminder.start()
+    notify.start()
+    
 @bot.command()
 async def connectETD(ctx, *args):
     await ctx.send(f"Your ID: `{ctx.author.id}`")
@@ -35,6 +53,18 @@ async def sendNotification(id,id_user,reader,content,author):
         await user.send(message)
         burnNotification(id)
 
+async def sendReminder(data):
+    for i in data:
+        message="Hello there :wine_glass:.\nFor today, we have the following to do:\n"
+        for j in data[i]:
+            message+="\n:bar_chart: **"+ j["title"]+"** link:"+j["link"]+"\n"
+        message+="\nGood Luck :heart:"
+        if(data[i]):
+            try:
+                user = await bot.fetch_user(i)
+                await user.send(message)
+            except:
+                print("id don't work")
 def burnNotification(id):
     url = host+'/apiDiscordBurnNotification/key='+conf.SECURITY_KEY
     target={"id":id}
@@ -46,5 +76,4 @@ def sendRequest(url,request=None):
     response = r.json()
     return response
 
-notify.start()
 bot.run(conf.BOT_KEY)
