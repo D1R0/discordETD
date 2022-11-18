@@ -45,6 +45,19 @@ async def connectETD(ctx, *args):
 async def ping(ctx):
     await ctx.send(f'My ping is** {round(bot.latency*1000)} Ms**')
 
+@bot.command()
+async def myTasks(ctx):
+    target=ctx.author.id
+    url = host+'/apiTasks/key='+conf.SECURITY_KEY
+    response=sendRequest(url)
+    data=[]
+    message="Hello there :wine_glass:.\nThere are:\n"
+    for i in response:
+        print(i)
+        if str(i).endswith(str(target)):
+            message+="\n:bar_chart: **"+ response[i]["title"]+"** link:"+response[i]["link"]+"\n"
+    message+="\nGood Luck :heart:"
+    await ctx.send(message)
 
 async def sendNotification(id,id_user,reader,content,author):
     if(id_user):
